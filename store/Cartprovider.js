@@ -15,17 +15,53 @@ const Cartprovider = ({children}) => {
     const emptyCart =()=>{
         setcart([])
     }
-    const addProductToCart = (product)=>{
+   }
+    let cartData;
+    const addProductToCart =async(product)=>{
+      
+        try {
+        
 
-    console.log(product.Id,product.size)
-     const existingProduct = cart.find(p=>p.Id === product.Id && p.size === product.size)
-     if(existingProduct){
-            setcart((cart)=>
-            cart.map((p)=>p.id === existingProduct.id && p.size === existingProduct.size ? {...p,quantity:p.quantity+1}:p))
-     }else{
-        setcart([...cart,{...product,...product.size,quantity:1}])
-     }
-     console.log(cart)
+          const cartResponse = await fetch('https://crudcrud.com/api/22af8d6841104716aa1e909331fe17b4/cart');
+           cartData = await cartResponse.json();
+          console.log(cartData)
+
+
+            const existingProduct = cartData.find((pro)=>pro.id === product.id && pro.size === product.size);
+
+
+        if(existingProduct){
+         
+           const updatedData = cartData.map((pro)=>pro.id === existingProduct.id && pro.size === existingProduct.size ?
+           {...pro,quantity:pro.quantity+1}:pro);
+
+           await fetch('https://crudcrud.com/api/22af8d6841104716aa1e909331fe17b4/cart',{
+            method:"PUT",
+            headers:{
+              'Content-Type': 'application/json',
+            },
+            body:JSON.stringify(updatedData)
+           })
+
+           console.log("udated existing data", existingProduct)
+        }else{
+          const newProduct ={...product,quantity:1};
+
+          await fetch('https://crudcrud.com/api/99c21b3ee1eb45f6836ca2595a2a4e9e/cart', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify([...cartData, newProduct]),
+          });
+    
+          console.log('New product added to the cart:', newProduct);
+        }
+          // setcart(cartData)
+        } catch (error) {
+          console.error("error in fetching datat")
+        }
+     
     }
 
 
